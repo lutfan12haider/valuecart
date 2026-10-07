@@ -12,17 +12,36 @@ const categoryNames = [
 const slugify = (s: string) => s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 const items: [string, number, number][] = [
-  ["Mountain Bike 26 inch", 0, 289], ["Folding City Bike", 0, 249], ["Kids Balance Bike", 0, 79],
-  ["Bike Helmet Pro", 1, 29], ["LED Bike Light Set", 1, 14], ["Bike Phone Holder", 1, 9],
-  ["Portable Bike Washing Machine Model X", 2, 249], ["Pressure Bike Washer Compact", 2, 189],
-  ["Top Load Washing Machine 8kg", 3, 329], ["Mini Twin Tub Washer", 3, 119],
-  ["Electric Kettle 1.8L", 4, 24], ["Air Purifier Home", 4, 99],
-  ["Storage Basket Set", 5, 18], ["Wall Shelf Floating", 5, 22],
-  ["Non-stick Pan 28cm", 6, 19], ["Knife Set 6 pcs", 6, 34], ["Digital Kitchen Scale", 6, 11],
-  ["Wireless Earbuds", 7, 27], ["Power Bank 20000mAh", 7, 25], ["Bluetooth Speaker", 7, 32],
-  ["Cotton T-Shirt", 8, 12], ["Winter Hoodie", 8, 28], ["Running Shoes", 9, 45], ["Casual Sneakers", 9, 38],
-  ["Travel Backpack 35L", 10, 31], ["Cordless Drill Kit", 11, 59], ["Socket Wrench Set", 11, 26],
-  ["Car Vacuum Cleaner", 12, 23], ["Dash Camera 1080p", 12, 49], ["Yoga Mat Thick", 13, 16]
+  // Bikes
+  ["Mountain Bike 26 inch Pro", 0, 1299], ["Folding City Bike Elite", 0, 1099], ["Carbon Road Bike", 0, 2499],
+  ["Electric Mountain Bike 500W", 0, 3200], ["Kids Balance Bike Premium", 0, 1050],
+  // Bike Accessories
+  ["Bike Helmet Pro Carbon", 1, 1200], ["LED Bike Light Set Pro", 1, 1100], ["Bike Phone Holder Mount", 1, 1000],
+  // Bike Washing Machines
+  ["Portable Bike Washing Machine Model X", 2, 1499], ["Pressure Bike Washer Compact", 2, 1250],
+  // Washing Machines
+  ["Top Load Washing Machine 12kg", 3, 1800], ["Front Load Washing Machine 8kg", 3, 2200],
+  ["Mini Twin Tub Washer", 3, 1050],
+  // Home Appliances
+  ["Smart Air Purifier HEPA", 4, 1300], ["Inverter Split AC 1.5 Ton", 4, 2800],
+  // Home Accessories
+  ["Smart Home Storage System", 5, 1100], ["Premium Wall Shelf Set", 5, 1050],
+  // Kitchen
+  ["Professional Kitchen Knife Set", 6, 1200], ["Smart Coffee Machine Espresso", 6, 1800],
+  ["Digital Kitchen Scale Pro", 6, 1000],
+  // Electronics
+  ["Wireless Noise Cancelling Earbuds", 7, 1500], ["Power Bank 40000mAh Fast Charge", 7, 1100],
+  ["Bluetooth Speaker Waterproof Pro", 7, 1200], ["4K Action Camera", 7, 2200],
+  // Clothing
+  ["Premium Winter Jacket", 8, 1100], ["Running Shoes Pro Edition", 9, 1300],
+  // Bags
+  ["Travel Backpack 50L Pro", 10, 1050],
+  // Tools
+  ["Cordless Drill Kit Professional", 11, 1400], ["Socket Wrench Set 150pcs", 11, 1100],
+  // Automotive
+  ["Dash Camera 4K Dual Lens", 12, 1200], ["Car Vacuum Cleaner Pro", 12, 1000],
+  // Sports
+  ["Yoga Mat Premium Thick", 13, 1000], ["Treadmill Electric Foldable", 13, 3500]
 ];
 
 async function main() {
@@ -38,20 +57,25 @@ async function main() {
     );
   }
 
+  // Clear old products before reseeding with new prices
+  await db.cartItem.deleteMany();
+  await db.orderItem.updateMany({ data: { productId: null } });
+  await db.productImage.deleteMany();
+  await db.productVariant.deleteMany();
+  await db.product.deleteMany();
+
   for (let i = 0; i < items.length; i++) {
     const [name, c, price] = items[i];
     const slug = slugify(name);
-    const sale = i % 3 === 0 ? Math.round(price * 0.85) : null;
-    await db.product.upsert({
-      where: { slug },
-      update: {},
-      create: {
+    const sale = i % 3 === 0 ? Math.round(price * 0.88) : null;
+    await db.product.create({
+      data: {
         name,
         slug,
         sku: `VC-${String(i + 1).padStart(4, "0")}`,
         brand: "ValueCart",
-        shortDescription: `${name} at an affordable price.`,
-        description: `${name}. Demo product description for the ValueCart marketplace.`,
+        shortDescription: `${name} — premium quality at a competitive price.`,
+        description: `${name}. High-quality product available on the ValueCart marketplace. Ships worldwide with tracking.`,
         categoryId: cats[c].id,
         basePrice: price,
         salePrice: sale,
@@ -72,7 +96,7 @@ async function main() {
 
   await db.shippingZone.deleteMany();
   await db.shippingZone.create({
-    data: { name: "Worldwide", countries: ["*"], charge: 5, freeAbove: 100, minDays: 7, maxDays: 21 }
+    data: { name: "Worldwide", countries: ["*"], charge: 25, freeAbove: 2000, minDays: 7, maxDays: 21 }
   });
 
   const email = process.env.ADMIN_EMAIL;
